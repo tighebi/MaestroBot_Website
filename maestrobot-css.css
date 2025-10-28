@@ -1,0 +1,333 @@
+/* MaestroBOT Web - Dark Mode Styling */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #E0E0E0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #1E1E1E;
+    border-radius: 8px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #FFFFFF;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #B0B0B0;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0;
+    background: #1E1E1E;
+    padding: 10px;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px 20px;
+    background: #333333;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.tab-btn:hover {
+    background: #4F4F4F;
+}
+
+.tab-btn.active {
+    background: #1E1E1E;
+    color: #66BB6A;
+}
+
+/* Tab Content */
+.tab-content {
+    background: #2A2A2A;
+    padding: 20px;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 20px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.instructions {
+    color: #E0E0E0;
+}
+
+.instructions h3 {
+    margin-bottom: 15px;
+    color: #FFFFFF;
+    font-size: 1.1rem;
+}
+
+.instruction-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.instruction-section {
+    background: #1E1E1E;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #333333;
+}
+
+.instruction-section h4 {
+    color: #66BB6A;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.instruction-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.instruction-section li {
+    padding: 5px 0;
+    color: #E0E0E0;
+}
+
+.sub-instruction {
+    display: block;
+    font-size: 0.85rem;
+    color: #B0B0B0;
+    margin-top: 3px;
+    padding-left: 20px;
+}
+
+/* Video Container */
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    height: 480px;
+    margin: 20px auto;
+    background: #000000;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #333333;
+}
+
+#video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+#canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+}
+
+#video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    color: #FFFFFF;
+    font-size: 1.5rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+#video-overlay.hidden {
+    display: none;
+}
+
+/* Status Panel */
+.status-panel {
+    background: #1E1E1E;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.status-item {
+    margin-bottom: 15px;
+}
+
+.status-item:last-child {
+    margin-bottom: 0;
+}
+
+.status-item label {
+    font-weight: bold;
+    margin-right: 10px;
+    color: #B0B0B0;
+}
+
+.status-item span {
+    color: #E0E0E0;
+}
+
+.action-status span {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+.state-status {
+    margin-top: 20px;
+}
+
+.state-status span {
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #2A2A2A;
+}
+
+.state-playing {
+    color: #66BB6A !important;
+    border: 2px solid #66BB6A;
+}
+
+.state-paused {
+    color: #FFA726 !important;
+    border: 2px solid #FFA726;
+}
+
+.state-stopped {
+    color: #EF5350 !important;
+    border: 2px solid #EF5350;
+}
+
+/* Controls */
+.controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.control-btn {
+    padding: 12px 20px;
+    background: #333333;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.control-btn:hover {
+    background: #4F4F4F;
+}
+
+.control-btn:active {
+    background: #5F5F5F;
+}
+
+/* Camera Controls */
+.camera-controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.camera-toggle {
+    padding: 15px 40px;
+    background: #333333;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.camera-toggle:hover {
+    background: #4F4F4F;
+}
+
+.camera-toggle.active {
+    background: #66BB6A;
+    color: #121212;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .controls {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .video-container {
+        height: 360px;
+    }
+
+    .instruction-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .controls {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+}
