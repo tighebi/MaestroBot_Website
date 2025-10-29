@@ -109,7 +109,8 @@ class HandTracker {
             for (let i = 0; i < results.multiHandLandmarks.length; i++) {
                 const landmarks = results.multiHandLandmarks[i];
                 const handedness = results.multiHandedness[i];
-                const label = handedness.label; // 'Left' or 'Right'
+                // Flip the label to match mirrored video
+                const label = handedness.label === 'Left' ? 'Right' : 'Left';
                 
                 // Draw hand landmarks
                 this.drawHandLandmarks(landmarks);
@@ -131,7 +132,7 @@ class HandTracker {
                     fingersUp: fingersUp
                 };
                 
-                // Draw gesture label on canvas
+                // Draw gesture label on canvas (using flipped label for display)
                 this.drawGestureLabel(label, gesture, x, y);
             }
         }
