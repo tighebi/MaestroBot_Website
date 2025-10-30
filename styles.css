@@ -14,9 +14,52 @@ body {
     min-height: 100vh;
 }
 
-.container {
-    max-width: 800px;
+.layout {
+    display: flex;
+    gap: 20px;
+    max-width: 1400px;
     margin: 0 auto;
+}
+
+.sidebar {
+    width: 350px;
+    background: #1E1E1E;
+    border-radius: 8px;
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.sidebar.hidden {
+    transform: translateX(-370px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.toggle-sidebar {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 100;
+    padding: 10px 15px;
+    background: #333333;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background 0.3s;
+}
+
+.toggle-sidebar:hover {
+    background: #4F4F4F;
 }
 
 header {
@@ -38,7 +81,6 @@ h1 {
     color: #B0B0B0;
 }
 
-/* Tabs */
 .tabs {
     display: flex;
     gap: 10px;
@@ -70,7 +112,6 @@ h1 {
     color: #66BB6A;
 }
 
-/* Tab Content */
 .tab-content {
     background: #2A2A2A;
     padding: 20px;
@@ -86,26 +127,18 @@ h1 {
     display: block;
 }
 
-.instructions {
-    color: #E0E0E0;
-}
-
 .instructions h3 {
     margin-bottom: 15px;
     color: #FFFFFF;
-    font-size: 1.1rem;
-}
-
-.instruction-grid {
-    display: grid;
-    gap: 15px;
+    font-size: 1.3rem;
 }
 
 .instruction-section {
-    background: #1E1E1E;
+    background: #2A2A2A;
     padding: 15px;
     border-radius: 6px;
     border: 1px solid #333333;
+    margin-bottom: 15px;
 }
 
 .instruction-section h4 {
@@ -132,7 +165,6 @@ h1 {
     padding-left: 20px;
 }
 
-/* Video Container */
 .video-container {
     position: relative;
     width: 100%;
@@ -152,7 +184,6 @@ h1 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1);
 }
 
 #canvas {
@@ -161,7 +192,6 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    transform: scaleX(-1);
 }
 
 #video-overlay {
@@ -184,7 +214,6 @@ h1 {
     display: none;
 }
 
-/* Status Panel */
 .status-panel {
     background: #1E1E1E;
     padding: 20px;
@@ -244,7 +273,6 @@ h1 {
     border: 2px solid #EF5350;
 }
 
-/* Controls */
 .controls {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -272,7 +300,6 @@ h1 {
     background: #5F5F5F;
 }
 
-/* Camera Controls */
 .camera-controls {
     text-align: center;
     margin-bottom: 20px;
@@ -300,11 +327,35 @@ h1 {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
+@media (max-width: 1200px) {
+    .layout {
+        flex-direction: column;
     }
+    
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+    }
+    
+    .sidebar.hidden {
+        transform: translateY(-20px);
+        max-height: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    .toggle-sidebar {
+        position: relative;
+        left: 0;
+        top: 0;
+        margin-bottom: 20px;
+        display: block;
+        width: 100%;
+    }
+}
 
+@media (max-width: 768px) {
     h1 {
         font-size: 2rem;
     }
@@ -315,10 +366,6 @@ h1 {
 
     .video-container {
         height: 360px;
-    }
-
-    .instruction-grid {
-        grid-template-columns: 1fr;
     }
 }
 

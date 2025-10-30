@@ -9,11 +9,6 @@ class HandTracker {
         this.canvasCtx = this.canvas.getContext('2d');
         this.isRunning = false;
         
-        // Gesture tracking state
-        this.prevHandData = {};
-        this.GESTURE_COOLDOWN = 500; // milliseconds
-        this.lastGestureTime = { left: 0, right: 0 };
-        
         // Gesture callback
         this.onGestureDetected = null;
         
@@ -21,6 +16,12 @@ class HandTracker {
         this.TIP_IDS = [4, 8, 12, 16, 20];
     }
     
+    // Helper function to calculate the Euclidean distance between two landmarks
+    distance(p1, p2) {
+        // We use Math.pow(x, 2) instead of x * x for clarity
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    }
+
     async initialize() {
         // Initialize MediaPipe Hands
         this.hands = new Hands({
@@ -44,7 +45,7 @@ class HandTracker {
     }
     
     async start() {
-        if (this.isRunning) return;
+        if (this.isRunning) return true;
         
         try {
             // Request camera access
@@ -103,19 +104,18 @@ class HandTracker {
         this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         const detectedHands = { left: null, right: null };
-        const currentTime = Date.now();
         
         if (results.multiHandLandmarks && results.multiHandedness) {
             for (let i = 0; i < results.multiHandLandmarks.length; i++) {
                 const landmarks = results.multiHandLandmarks[i];
                 const handedness = results.multiHandedness[i];
-                // Flip the label to match mirrored video
-                const label = handedness.label === 'Left' ? 'Right' : 'Left';
+                const label = handedness.label; // Keep original label (no flip)
                 
                 // Draw hand landmarks
                 this.drawHandLandmarks(landmarks);
                 
                 // Count fingers and classify gesture
+                // FIXED: Passing the 'label' argument (Line ~217)
                 const fingersUp = this.countFingers(landmarks, label);
                 const gesture = this.classifyGesture(fingersUp);
                 
@@ -132,7 +132,7 @@ class HandTracker {
                     fingersUp: fingersUp
                 };
                 
-                // Draw gesture label on canvas (using flipped label for display)
+                // Draw gesture label on canvas
                 this.drawGestureLabel(label, gesture, x, y);
             }
         }
@@ -148,12 +148,12 @@ class HandTracker {
     drawHandLandmarks(landmarks) {
         // Draw connections
         const connections = [
-            [0, 1], [1, 2], [2, 3], [3, 4],  // Thumb
-            [0, 5], [5, 6], [6, 7], [7, 8],  // Index
-            [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
-            [0, 13], [13, 14], [14, 15], [15, 16],  // Ring
-            [0, 17], [17, 18], [18, 19], [19, 20],  // Pinky
-            [5, 9], [9, 13], [13, 17]  // Palm
+            [0, 1], [1, 2], [2, 3], [3, 4],  // Thumb
+            [0, 5], [5, 6], [6, 7], [7, 8],  // Index
+            [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+            [0, 13], [13, 14], [14, 15], [15, 16],  // Ring
+            [0, 17], [17, 18], [18, 19], [19, 20],  // Pinky
+            [5, 9], [9, 13], [13, 17]  // Palm
         ];
         
         this.canvasCtx.strokeStyle = '#F542E6';
@@ -195,25 +195,45 @@ class HandTracker {
         this.canvasCtx.fillText(text, textX, textY);
     }
     
-    countFingers(landmarks, label) {
+    // FIXED: Added 'handednessLabel' parameter to the function definition (Line ~263)
+    countFingers(landmarks, handednessLabel) { 
         const fingersUp = [];
         
-        // Thumb detection (horizontal movement)
-        const thumbTipX = landmarks[this.TIP_IDS[0]].x;
-        const thumbIpX = landmarks[this.TIP_IDS[0] - 1].x;
-        
-        if (label === 'Right') {
-            fingersUp.push(thumbTipX < thumbIpX ? 1 : 0);
-        } else {
-            fingersUp.push(thumbTipX > thumbIpX ? 1 : 0);
+        // --- 1. Thumb Check (L4) ---
+        // This logic is designed to correctly detect a tightly closed fist by checking 
+        // the thumb's bend (L4 relative to L3) both vertically and horizontally.
+
+        let finalThumbIsUp = 1; // Assume up initially
+
+        // Check 1: Vertical Position - Is the thumb tip (L4) bent down past its PIP joint (L3)?
+        // If L4.y is lower (larger) than L3.y, it's bent.
+        if (landmarks[4].y > landmarks[3].y) {
+            finalThumbIsUp = 0;
+        }
+
+        // Check 2: Horizontal Position - Is the thumb tucked in across the palm (crossing L3)?
+        if (handednessLabel === 'Right') {
+            // For a right hand, if L4.x is to the right (larger) of L3.x, it's tucked in.
+            if (landmarks[4].x > landmarks[3].x) {
+                finalThumbIsUp = 0;
+            }
+        } else { // Left hand
+            // For a left hand, if L4.x is to the left (smaller) of L3.x, it's tucked in.
+            if (landmarks[4].x < landmarks[3].x) {
+                finalThumbIsUp = 0;
+            }
         }
         
-        // Other fingers (vertical extension)
+        fingersUp.push(finalThumbIsUp);
+        
+        // --- 2. Other Fingers (L8, 12, 16, 20) ---
+        // Check if the tip's Y-coordinate is higher (smaller value) than the PIP joint's Y-coordinate.
         for (let i = 1; i < this.TIP_IDS.length; i++) {
             const tipId = this.TIP_IDS[i];
             const tipY = landmarks[tipId].y;
-            const pipY = landmarks[tipId - 2].y;
+            const pipY = landmarks[tipId - 2].y; // PIP joint is two points before the tip
             
+            // In normalized coordinates (0,0 is top-left), tipY < pipY means the finger is extended upwards
             fingersUp.push(tipY < pipY ? 1 : 0);
         }
         
@@ -223,20 +243,13 @@ class HandTracker {
     classifyGesture(fingersUp) {
         const total = fingersUp.reduce((a, b) => a + b, 0);
         
-        // Check for specific patterns
-        if (total === 1 && (fingersUp[1] === 1 || fingersUp[0] === 1)) {
-            return 'One Finger';
-        } else if (total === 2 && fingersUp[1] === 1 && fingersUp[2] === 1) {
-            return 'Two Fingers';
-        } else if (total === 3 && fingersUp[1] === 1 && fingersUp[2] === 1 && fingersUp[3] === 1) {
-            return 'Three Fingers';
-        } else if (total === 4 && fingersUp.slice(1).every(f => f === 1)) {
-            return 'Four Fingers';
-        } else if (total === 5) {
-            return 'Open Hand';
-        } else if (total === 0) {
-            return 'Closed Fist';
-        }
+        // Simple count-based classification
+        if (total === 0) return 'Closed Fist'; // This is your 'closed well'
+        if (total === 5) return 'Open Hand';
+        if (total === 1) return '1 Finger';
+        if (total === 2) return '2 Fingers';
+        if (total === 3) return '3 Fingers';
+        if (total === 4) return '4 Fingers';
         
         return 'Other';
     }

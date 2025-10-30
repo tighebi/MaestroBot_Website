@@ -1,5 +1,10 @@
 // app.js - Main application logic and music controller
 
+// Sidebar toggle
+document.getElementById('toggle-sidebar').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('hidden');
+});
+
 class MusicController {
     constructor() {
         // DOM Elements
@@ -27,7 +32,7 @@ class MusicController {
         this.playbackRate = 1.0;
         this.targetVolume = 0.6;
         this.targetRate = 1.0;
-        this.controlMode = 'static'; // 'static' or 'slider'
+        this.controlMode = 'slider'; // 'static' or 'slider'
         
         // Fading state
         this.isFading = false;
@@ -126,8 +131,6 @@ class MusicController {
                 this.cameraBtn.classList.add('active');
                 this.videoOverlay.classList.add('hidden');
                 this.actionStatus.textContent = '(waiting)';
-            } else {
-                alert('Failed to start camera. Please check permissions.');
             }
         }
     }
@@ -147,21 +150,17 @@ class MusicController {
     }
     
     playManual() {
-        if (this.isFading) return;
+        if (this.isFading || !this.audio.src) return;
         
-        if (this.audio.src) {
-            this.audio.play().then(() => {
-                this.isPlaying = true;
-                this.isPaused = false;
-                this.audio.volume = this.targetVolume;
-                this.audio.playbackRate = this.targetRate;
-                this.updateStateLabel();
-            }).catch(err => {
-                console.error('Play failed:', err);
-            });
-        } else {
-            alert('Please load an MP3 file first.');
-        }
+        this.audio.play().then(() => {
+            this.isPlaying = true;
+            this.isPaused = false;
+            this.audio.volume = this.targetVolume;
+            this.audio.playbackRate = this.targetRate;
+            this.updateStateLabel();
+        }).catch(err => {
+            console.error('Play failed:', err);
+        });
     }
     
     pauseManual() {
@@ -299,10 +298,10 @@ class MusicController {
         // Volume control - left hand
         if (leftHand) {
             const volumeMap = {
-                'One Finger': 0.25,
-                'Two Fingers': 0.5,
-                'Three Fingers': 0.75,
-                'Four Fingers': 1.0
+                '1 Finger': 0.25,
+                '2 Fingers': 0.5,
+                '3 Fingers': 0.75,
+                '4 Fingers': 1.0
             };
             
             if (volumeMap[leftGesture] !== undefined) {
@@ -313,10 +312,10 @@ class MusicController {
         // Speed control - right hand
         if (rightHand) {
             const rateMap = {
-                'One Finger': 0.5,
-                'Two Fingers': 0.75,
-                'Three Fingers': 1.0,
-                'Four Fingers': 1.5
+                '1 Finger': 0.5,
+                '2 Fingers': 0.75,
+                '3 Fingers': 1.0,
+                '4 Fingers': 1.5
             };
             
             if (rateMap[rightGesture] !== undefined) {

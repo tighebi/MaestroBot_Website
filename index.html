@@ -7,122 +7,105 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎵 MaestroBOT</h1>
-            <p class="subtitle">Control music with hand gestures</p>
-        </header>
+    <button class="toggle-sidebar" id="toggle-sidebar">☰ Instructions</button>
+    
+    <div class="layout">
+        <aside class="sidebar hidden" id="sidebar">
+            <div class="instructions">
+                <h3>Control Modes</h3>
+                
+                <div class="instruction-section">
+                    <h4>Slider Controls (Hands work independently):</h4>
+                    <ul>
+                        <li><strong>Playback (Left Hand):</strong></li>
+                        <li>• Open Hand → Play/Resume</li>
+                        <li>• Closed Fist → Fade to Pause</li>
+                        <li style="margin-top: 10px;"><strong>Sliders (Right Hand):</strong></li>
+                        <li>• Open Hand + Move L/R → Speed<br>
+                            <span class="sub-instruction">(Right=Faster, Left=Slower)</span>
+                        </li>
+                        <li>• Closed Fist + Move U/D → Volume<br>
+                            <span class="sub-instruction">(Up=Louder, Down=Quieter)</span>
+                        </li>
+                    </ul>
+                </div>
 
-        <!-- Video Feed -->
-        <div class="video-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-            <div id="video-overlay">Camera Off</div>
-        </div>
-
-        <!-- Camera Toggle -->
-        <div class="camera-controls">
-            <button id="camera-btn" class="camera-toggle">Start Camera</button>
-        </div>
-
-        <!-- Status Display -->
-        <div class="status-panel">
-            <div class="status-item">
-                <label>File:</label>
-                <span id="file-status">(none)</span>
+                <div class="instruction-section">
+                    <h4>Static Gestures (Hands work together):</h4>
+                    <ul>
+                        <li><strong>Playback:</strong></li>
+                        <li>• Both Hands Open → Play/Resume</li>
+                        <li>• Both Hands Closed → Fade to Pause</li>
+                        <li style="margin-top: 10px;"><strong>Volume (Left Hand):</strong></li>
+                        <li>• 1 Finger → 25%</li>
+                        <li>• 2 Fingers → 50%</li>
+                        <li>• 3 Fingers → 75%</li>
+                        <li>• 4 Fingers → 100%</li>
+                        <li style="margin-top: 10px;"><strong>Speed (Right Hand):</strong></li>
+                        <li>• 1 Finger → 0.50x</li>
+                        <li>• 2 Fingers → 0.75x</li>
+                        <li>• 3 Fingers → 1.00x</li>
+                        <li>• 4 Fingers → 1.50x</li>
+                    </ul>
+                </div>
             </div>
-            <div class="status-item action-status">
-                <label>Action:</label>
-                <span id="action-status">(waiting)</span>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>🎵 MaestroBOT</h1>
+                <p class="subtitle">Control music with hand gestures</p>
+            </header>
+
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div id="video-overlay">Camera Off</div>
             </div>
-            <div class="status-item state-status">
-                <span id="state-status" class="state-stopped">State: stopped | Volume: 60 | Rate: 1.00x</span>
+
+            <div class="camera-controls">
+                <button id="camera-btn" class="camera-toggle">Start Camera</button>
             </div>
-        </div>
 
-        <!-- Audio Element -->
-        <audio id="audio" preload="auto"></audio>
-
-        <!-- Manual Controls -->
-        <div class="controls">
-            <button id="load-btn" class="control-btn">Load MP3</button>
-            <button id="play-btn" class="control-btn">Play</button>
-            <button id="pause-btn" class="control-btn">Pause</button>
-            <button id="stop-btn" class="control-btn">Stop</button>
-        </div>
-
-        <!-- Tab Navigation -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="slider">Slider Controls</button>
-            <button class="tab-btn" data-tab="static">Static Gestures</button>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="tab-content">
-            <!-- Slider Controls Tab -->
-            <div id="slider-tab" class="tab-pane active">
-                <div class="instructions">
-                    <h3>Slider Controls (Hands work independently):</h3>
-                    <div class="instruction-grid">
-                        <div class="instruction-section">
-                            <h4>Playback (Left Hand):</h4>
-                            <ul>
-                                <li>Open Hand → Play/Resume</li>
-                                <li>Closed Fist → Fade to Pause</li>
-                            </ul>
-                        </div>
-                        <div class="instruction-section">
-                            <h4>Sliders (Right Hand):</h4>
-                            <ul>
-                                <li>Open Hand + Move L/R → Speed<br>
-                                    <span class="sub-instruction">(Right=Faster, Left=Slower)</span>
-                                </li>
-                                <li>Closed Fist + Move U/D → Volume<br>
-                                    <span class="sub-instruction">(Up=Louder, Down=Quieter)</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+            <div class="status-panel">
+                <div class="status-item">
+                    <label>File:</label>
+                    <span id="file-status">(none)</span>
+                </div>
+                <div class="status-item action-status">
+                    <label>Action:</label>
+                    <span id="action-status">(waiting)</span>
+                </div>
+                <div class="status-item state-status">
+                    <span id="state-status" class="state-stopped">State: stopped | Volume: 60 | Rate: 1.00x</span>
                 </div>
             </div>
 
-            <!-- Static Gestures Tab -->
-            <div id="static-tab" class="tab-pane">
-                <div class="instructions">
-                    <h3>Static Gestures (Hands work together):</h3>
-                    <div class="instruction-grid">
-                        <div class="instruction-section">
-                            <h4>Playback:</h4>
-                            <ul>
-                                <li>Both Hands Open → Play/Resume</li>
-                                <li>Both Hands Closed → Fade to Pause</li>
-                            </ul>
-                        </div>
-                        <div class="instruction-section">
-                            <h4>Volume (Left Hand):</h4>
-                            <ul>
-                                <li>One Finger → 25%</li>
-                                <li>Two Fingers → 50%</li>
-                                <li>Three Fingers → 75%</li>
-                                <li>Four Fingers → 100%</li>
-                            </ul>
-                        </div>
-                        <div class="instruction-section">
-                            <h4>Speed (Right Hand):</h4>
-                            <ul>
-                                <li>One Finger → 0.50x</li>
-                                <li>Two Fingers → 0.75x</li>
-                                <li>Three Fingers → 1.00x</li>
-                                <li>Four Fingers → 1.50x</li>
-                            </ul>
-                        </div>
-                    </div>
+            <audio id="audio" preload="auto"></audio>
+
+            <div class="controls">
+                <button id="load-btn" class="control-btn">Load MP3</button>
+                <button id="play-btn" class="control-btn">Play</button>
+                <button id="pause-btn" class="control-btn">Pause</button>
+                <button id="stop-btn" class="control-btn">Stop</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="slider">Slider Controls</button>
+                <button class="tab-btn" data-tab="static">Static Gestures</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="slider-tab" class="tab-pane active">
+                    <p style="text-align: center; color: #B0B0B0;">Use left hand for play/pause, right hand for dynamic speed/volume control</p>
+                </div>
+                <div id="static-tab" class="tab-pane">
+                    <p style="text-align: center; color: #B0B0B0;">Use finger counts to set specific volume and speed levels</p>
                 </div>
             </div>
-        </div>
 
-        <!-- Hidden File Input -->
-        <input type="file" id="file-input" accept="audio/mp3,audio/mpeg" style="display: none;">
+            <input type="file" id="file-input" accept="audio/mp3,audio/mpeg" style="display: none;">
+        </main>
     </div>
 
     <!-- Load MediaPipe -->
