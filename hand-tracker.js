@@ -109,7 +109,7 @@ class HandTracker {
             for (let i = 0; i < results.multiHandLandmarks.length; i++) {
                 const landmarks = results.multiHandLandmarks[i];
                 const handedness = results.multiHandedness[i];
-                const label = handedness.label; // Keep original label (no flip)
+                const label = handedness.label === 'Left' ? 'Right' : 'Left';
                 
                 // Draw hand landmarks
                 this.drawHandLandmarks(landmarks);
@@ -182,63 +182,91 @@ class HandTracker {
     }
     
     drawGestureLabel(label, gesture, x, y) {
-        this.canvasCtx.font = 'bold 18px Segoe UI';
-        this.canvasCtx.fillStyle = '#00FF00';
-        this.canvasCtx.strokeStyle = '#000000';
-        this.canvasCtx.lineWidth = 3;
-        
-        const text = `${label}: ${gesture}`;
-        const textX = x - 70;
-        const textY = y - 30;
-        
-        this.canvasCtx.strokeText(text, textX, textY);
-        this.canvasCtx.fillText(text, textX, textY);
+    this.canvasCtx.font = 'bold 18px Segoe UI';
+    this.canvasCtx.fillStyle = '#00FF00';
+    this.canvasCtx.strokeStyle = '#000000';
+    this.canvasCtx.lineWidth = 3;
+
+    const text = `${label}: ${gesture}`;
+    const textX = x - 70;
+    const textY = y - 30;
+    
+    // Save the current canvas state (un-flipped)
+    this.canvasCtx.save();
+    
+    // Move origin to the text's drawing position
+    this.canvasCtx.translate(textX, textY);
+    
+    // Horizontally flip the drawing context
+    this.canvasCtx.scale(-1, 1); 
+    
+    // Draw the text at the new (0,0) origin.
+    // This text is now mirrored *on the canvas*.
+    this.canvasCtx.strokeText(text, 0, 0);
+    this.canvasCtx.fillText(text, 0, 0);
+    
+    // Restore the canvas to its original state.
+    // The CSS flip will now "un-mirror" this mirrored text, making it readable.
+    this.canvasCtx.restore();
+}
+    
+countFingers(landmarks, handednessLabel) { 
+    const fingersUp = [];
+    
+    // --- 1. Thumb Check (L4) ---
+    
+    // Start by assuming the thumb is down (0)
+    let finalThumbIsUp = 0; 
+    
+    // Get coordinates for thumb landmarks
+    const thumbTipY = landmarks[4].y;
+    const thumbIpY = landmarks[3].y;  // IP joint (Interphalangeal)
+    const thumbTipX = landmarks[4].x;
+    const thumbIpX = landmarks[3].x;
+
+    // Check 1: Vertical extension
+    // Is the tip (L4) higher than the IP joint (L3)?
+    const verticallyExtended = thumbTipY < thumbIpY;
+    
+    // Check 2: Horizontal extension
+    // Is the tip (L4) horizontally further from the palm than the IP joint (L3)?
+    // This logic is based on the *original mirrored video* coordinates.
+    let horizontallyExtended = false;
+    
+    if (handednessLabel === 'Right') {
+        // An actual RIGHT hand looks like a LEFT hand in the mirrored video.
+        // On that mirrored "left hand", the thumb is on the right side.
+        // It's "extended" if its X is GREATER than the joint X.
+        horizontallyExtended = thumbTipX > thumbIpX;
+    } else { // 'Left'
+        // An actual LEFT hand looks like a RIGHT hand in the mirrored video.
+        // On that mirrored "right hand", the thumb is on the left side.
+        // It's "extended" if its X is LESS than the joint X.
+        horizontallyExtended = thumbTipX < thumbIpX;
+    }
+
+    // The thumb is only "UP" if it's extended in *both* directions.
+    if (verticallyExtended && horizontallyExtended) {
+        finalThumbIsUp = 1;
     }
     
-    // FIXED: Added 'handednessLabel' parameter to the function definition (Line ~263)
-    countFingers(landmarks, handednessLabel) { 
-        const fingersUp = [];
+    fingersUp.push(finalThumbIsUp);
+    
+    // --- 2. Other Fingers (L8, 12, 16, 20) ---
+    
+    // Check if the tip's Y-coordinate is higher (smaller value) 
+    // than the PIP joint's Y-coordinate.
+    for (let i = 1; i < this.TIP_IDS.length; i++) {
+        const tipId = this.TIP_IDS[i];
+        const tipY = landmarks[tipId].y;
+        const pipY = landmarks[tipId - 2].y; // PIP joint is two points before the tip
         
-        // --- 1. Thumb Check (L4) ---
-        // This logic is designed to correctly detect a tightly closed fist by checking 
-        // the thumb's bend (L4 relative to L3) both vertically and horizontally.
-
-        let finalThumbIsUp = 1; // Assume up initially
-
-        // Check 1: Vertical Position - Is the thumb tip (L4) bent down past its PIP joint (L3)?
-        // If L4.y is lower (larger) than L3.y, it's bent.
-        if (landmarks[4].y > landmarks[3].y) {
-            finalThumbIsUp = 0;
-        }
-
-        // Check 2: Horizontal Position - Is the thumb tucked in across the palm (crossing L3)?
-        if (handednessLabel === 'Right') {
-            // For a right hand, if L4.x is to the right (larger) of L3.x, it's tucked in.
-            if (landmarks[4].x > landmarks[3].x) {
-                finalThumbIsUp = 0;
-            }
-        } else { // Left hand
-            // For a left hand, if L4.x is to the left (smaller) of L3.x, it's tucked in.
-            if (landmarks[4].x < landmarks[3].x) {
-                finalThumbIsUp = 0;
-            }
-        }
-        
-        fingersUp.push(finalThumbIsUp);
-        
-        // --- 2. Other Fingers (L8, 12, 16, 20) ---
-        // Check if the tip's Y-coordinate is higher (smaller value) than the PIP joint's Y-coordinate.
-        for (let i = 1; i < this.TIP_IDS.length; i++) {
-            const tipId = this.TIP_IDS[i];
-            const tipY = landmarks[tipId].y;
-            const pipY = landmarks[tipId - 2].y; // PIP joint is two points before the tip
-            
-            // In normalized coordinates (0,0 is top-left), tipY < pipY means the finger is extended upwards
-            fingersUp.push(tipY < pipY ? 1 : 0);
-        }
-        
-        return fingersUp;
+        // tipY < pipY means the finger is extended upwards
+        fingersUp.push(tipY < pipY ? 1 : 0);
     }
+    
+    return fingersUp;
+}
     
     classifyGesture(fingersUp) {
         const total = fingersUp.reduce((a, b) => a + b, 0);
